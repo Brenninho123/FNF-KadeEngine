@@ -4,25 +4,29 @@
       "name": "lime",
       "type": "git",
       "dir": null,
-      "ref": "main",
-      "url": "https://github.com/AlafandyPorting/lime-0.7.3"
+      "ref": "268dacfb2609766e14bef9ea5b669e91501852d2",
+      "url": "https://github.com/FunkinCrew/lime"
     },
     {
       "name": "openfl",
-      "type": "haxelib",
-      "version": "9.5.2"
+      "type": "git",
+      "dir": null,
+      "ref": "74a51908a116d6df74be1083e219abb9fa057636",
+      "url": "https://github.com/FunkinCrew/openfl"
     },
     {
       "name": "flixel",
-      "type": "haxelib",
-      "version": "6.2.0"
+      "type": "git",
+      "dir": null,
+      "ref": "141f23c400c0508c76d5a09a143f5ce6790f8122",
+      "url": "https://github.com/FunkinCrew/flixel"
     },
     {
       "name": "hxcpp",
       "type": "git",
       "dir": null,
-      "ref": "main",
-      "url": "https://github.com/AlafandyPorting/hxcpp-0.7.3"
+      "ref": "0376e9b19af9a4d91f9d9afc131a358467856a10",
+      "url": "https://github.com/FunkinCrew/hxcpp"
     },
     {
       "name": "flixel-tools",
@@ -46,8 +50,10 @@
     },
     {
       "name": "flixel-addons",
-      "type": "haxelib",
-      "version": "4.0.1"
+      "type": "git",
+      "dir": null,
+      "ref": "7628435364c4a45440d1e5db656741b66a8cd2ec",
+      "url": "https://github.com/FunkinCrew/flixel-addons"
     },
     {
       "name": "faxe",
@@ -58,8 +64,10 @@
     },
     {
       "name": "polymod",
-      "type": "haxelib",
-      "version": "1.8.0"
+      "type": "git",
+      "dir": null,
+      "ref": "acfdc2e26722f20339a2bc0cc8cd7dd5fe0c6b5e",
+      "url": "https://github.com/FunkinCrew/polymod"
     },
     {
       "name": "discord_rpc",
@@ -76,6 +84,11 @@
       "url": "https://github.com/AlafandyPorting/extension-webm"
     },
     {
+      "name": "extension-androidtools",
+      "type": "haxelib",
+      "version": "2.2.2"
+    },
+    {
       "name": "linc_luajit",
       "type": "haxelib",
       "version": null
@@ -89,11 +102,6 @@
       "name": "hxp",
       "type": "haxelib",
       "version": "1.3.1"
-    },
-    {
-      "name": "extension-androidtools",
-      "type": "haxelib",
-      "version": "2.2.2"
     }
   ]
 }
