@@ -1831,22 +1831,16 @@ class PlayState extends MusicBeatState
 		FlxTween.tween(FlxG.camera, {zoom: 1.3}, (Conductor.stepCrochet * 4 / 1000), {ease: FlxEase.elasticInOut});
 	}
 
+	#if android
+	function addAndroidBack():Void
+	{
+		FlxG.android.preventDefaultKeys = [flixel.input.android.FlxAndroidKey.BACK];
+	}
+	#end
+
 	override function openSubState(SubState:FlxSubState)
 	{
-		if (PauseSubState.goToOptions)
-		{
-			Debug.logTrace("pause thingyt");
-			if (PauseSubState.goBack)
-			{
-				Debug.logTrace("pause thingyt");
-				PauseSubState.goToOptions = false;
-				PauseSubState.goBack = false;
-				openSubState(new PauseSubState());
-			}
-			else
-				openSubState(new OptionsMenu(true));
-		}
-		else if (paused)
+		if (paused)
 		{
 			if (FlxG.sound.music != null && !startingSong)
 			{
@@ -2070,7 +2064,12 @@ class PlayState extends MusicBeatState
 
 		scoreTxt.screenCenter(X);
 
-		if (controls.PAUSE && startedCountdown && canPause)
+		var androidBackPressed = false;
+		#if android
+		androidBackPressed = FlxG.android.justReleased.BACK;
+		#end
+
+		if ((controls.PAUSE || androidBackPressed) && startedCountdown && canPause)
 		{
 			persistentUpdate = false;
 			persistentDraw = true;
@@ -2078,12 +2077,9 @@ class PlayState extends MusicBeatState
 
 			// 1 / 1000 chance for Gitaroo Man easter egg
 			if (FlxG.random.bool(0.1))
-			{
-				trace('GITAROO MAN EASTER EGG');
 				FlxG.switchState(new GitarooPause());
-			}
 			else
-				openSubState(new PauseSubState());
+				openSubState(new PauseSubState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
 		}
 
 
