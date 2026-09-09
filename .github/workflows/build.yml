@@ -68,6 +68,33 @@ jobs:
           haxelib install hmm --quiet
           haxelib run hmm install --quiet
 
+      - name: Compile hxcpp build tools
+        shell: bash
+        run: |
+          cd .haxelib/hxcpp/git/tools/hxcpp
+          haxe compile.hxml
+          cd -
+
+      - name: Restore lime native rebuild cache
+        id: cache-lime
+        uses: actions/cache@v4
+        with:
+          path: .haxelib/lime/git/ndll
+          key: lime-ndll-${{ inputs.os }}-${{ hashFiles('hmm.json') }}
+
+      - name: Setup and rebuild lime
+        if: steps.cache-lime.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          haxelib --always run lime setup
+          haxelib run lime rebuild hxcpp
+          haxelib run lime rebuild cpp -64
+
+      - name: Ensure lime is set up
+        if: steps.cache-lime.outputs.cache-hit == 'true'
+        shell: bash
+        run: haxelib --always run lime setup
+
       - name: Configure Android
         if: inputs.name == 'Android x64' || inputs.name == 'Android x32'
         run: |
