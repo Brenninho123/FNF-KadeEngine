@@ -28,14 +28,23 @@ jobs:
   build:
     name: Build
     runs-on: ${{ inputs.os }}
+    timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@v4
 
       - name: Setup Haxe
-        uses: krdlab/setup-haxe@master
+        uses: krdlab/setup-haxe@v1
         with:
           haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Cache Haxelib
+        uses: actions/cache@v4
+        with:
+          path: ~/haxe/lib
+          key: haxelib-${{ inputs.os }}-${{ hashFiles('hmm.json') }}
+          restore-keys: |
+            haxelib-${{ inputs.os }}-
 
       - name: Update APT
         if: inputs.name == 'Linux'
@@ -50,7 +59,7 @@ jobs:
 
       - name: Setup XCode
         if: inputs.name == 'iOS'
-        uses: maxim-lobanov/setup-xcode@master
+        uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '16.4'
 
@@ -70,6 +79,14 @@ jobs:
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
 
+      - name: Verify Android Signature
+        if: inputs.name == 'Android x64' || inputs.name == 'Android x32'
+        run: |
+          BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/*/ | sort -V | tail -n 1)
+          APK_PATH=$(ls ${{ inputs.artifactPath }} | head -n 1)
+          "${BUILD_TOOLS}apksigner" verify --verbose "$APK_PATH"
+          "${BUILD_TOOLS}zipalign" -c -v 4 "$APK_PATH"
+
       - name: Make IPA
         if: inputs.name == 'iOS'
         run: |
@@ -79,7 +96,7 @@ jobs:
           zip -r ${{ env.PROJECT_NAME }}.ipa Payload
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifactName }}
           path: ${{ inputs.artifactPath }}
