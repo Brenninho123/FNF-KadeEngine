@@ -31,6 +31,7 @@ class OptionsMenu extends MusicBeatState
 			#end
 			new DFJKOption(controls),
 			new DownscrollOption("Change the layout of the strumline."),
+			new MiddlescrollOption("Your notes are centered and the opponent's notes become invisible."),
 			new GhostTapOption("Ghost Tapping is when you tap a direction and it doesn't give you a miss."),
 			#if mobileC
 			new FastValue("Switch speed of changing value in bottom. (e.g. offset)"),
