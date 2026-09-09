@@ -1632,7 +1632,7 @@ class PlayState extends MusicBeatState
 				var swagNote:Note = new Note(daStrumTime, daNoteData, oldNote);
 
 				// if you hide these two lines, then the opponent arrows will go right in the same place as yours
-				if (!gottaHitNote && FlxG.save.data.middlescroll)
+				if (!gottaHitNote && FlxG.save.data.middlescroll == true)
 					continue;
 
 				swagNote.sustainLength = songNotes[2];
@@ -1692,7 +1692,7 @@ class PlayState extends MusicBeatState
 			//defaults if no noteStyle was found in chart
 			var noteTypeCheck:String = 'normal';
 		
-			if ((PlayStateChangeables.Optimize || FlxG.save.data.middlescroll) && player == 0)
+			if ((PlayStateChangeables.Optimize || FlxG.save.data.middlescroll == true) && player == 0)
 				continue;
 
 			if (SONG.noteStyle == null) {
@@ -1829,7 +1829,7 @@ class PlayState extends MusicBeatState
 			babyArrow.x += 50;
 			babyArrow.x += ((FlxG.width / 2) * player);
 			
-			if (PlayStateChangeables.Optimize || (FlxG.save.data.middlescroll && player == 1))
+			if (PlayStateChangeables.Optimize || (FlxG.save.data.middlescroll == true && player == 1))
 				babyArrow.x -= 275;
 			
 			cpuStrums.forEach(function(spr:FlxSprite)
