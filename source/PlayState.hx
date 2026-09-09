@@ -1692,7 +1692,7 @@ class PlayState extends MusicBeatState
 			//defaults if no noteStyle was found in chart
 			var noteTypeCheck:String = 'normal';
 		
-			if (PlayStateChangeables.Optimize && player == 0)
+			if ((PlayStateChangeables.Optimize || FlxG.save.data.middlescroll) && player == 0)
 				continue;
 
 			if (SONG.noteStyle == null) {
@@ -1829,7 +1829,7 @@ class PlayState extends MusicBeatState
 			babyArrow.x += 50;
 			babyArrow.x += ((FlxG.width / 2) * player);
 			
-			if (PlayStateChangeables.Optimize)
+			if (PlayStateChangeables.Optimize || (FlxG.save.data.middlescroll && player == 1))
 				babyArrow.x -= 275;
 			
 			cpuStrums.forEach(function(spr:FlxSprite)
