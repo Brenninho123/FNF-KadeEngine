@@ -135,12 +135,19 @@ class Project extends HXProject
 		if (isMobile())
 			includeAssets("assets/shared/images/hitbox", "assets/shared/images/hitbox");
 
-		includeAssets("art/readme.txt", "do NOT readme.txt");
-		includeAssets("LICENSE", "LICENSE.txt");
+		var readme = new Asset("art/readme.txt");
+		readme.rename = "do NOT readme.txt";
+		assets.push(readme);
 
-		var fonts = new Asset("assets/fonts");
-		fonts.embed = true;
-		assets.push(fonts);
+		var license = new Asset("LICENSE");
+		license.rename = "LICENSE.txt";
+		assets.push(license);
+
+		var fontsStart = assets.length;
+		includeAssets("assets/fonts", "assets/fonts", ["*"]);
+
+		for (i in fontsStart...assets.length)
+			assets[i].embed = true;
 	}
 
 	function configureLibraries():Void
