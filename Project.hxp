@@ -3,195 +3,217 @@ import lime.tools.*;
 
 class Project extends HXProject
 {
-	static inline var PACKAGE_NAME = "me.funkin.kadeengine";
-	static inline var APP_VERSION = "0.2.7.1";
-	static inline var COMPANY = "Brenninho";
-
-	static var WEEK_LIBRARIES = ["songs", "shared", "tutorial", "week1", "week2", "week3", "week4", "week5", "week6"];
-
 	public function new()
 	{
 		super();
 
-		configureMeta();
-		configureWindow();
-		configurePaths();
-		configureAssets();
-		configureLibraries();
-		configureHaxedefs();
-		configureIcons();
-	}
+		meta.title = "Friday Night Funkin': Kade Engine";
+		meta.packageName = "com.funkin.kade";
+		meta.package = "com.funkin.kade";
+		meta.company = "The Kade Crew";
+		meta.companyUrl = "https://github.com/KadeDev";
+		meta.version = "0.2.7.1";
+		meta.buildNumber = "1";
 
-	function isMobile():Bool
-	{
-		return platformType == PlatformType.MOBILE;
-	}
-
-	function isWeb():Bool
-	{
-		return platformType == PlatformType.WEB;
-	}
-
-	function isSwitch():Bool
-	{
-		return defines.exists("switch");
-	}
-
-	function configureMeta():Void
-	{
-		meta.packageName = PACKAGE_NAME;
-		meta.version = APP_VERSION;
-		meta.company = COMPANY;
-
-		if (isMobile())
+		if (platformType == PlatformType.MOBILE)
 		{
 			meta.title = "FNF: Kade Engine";
-			app.file = "KadeEngine";
-		}
-		else
-		{
-			meta.title = "Friday Night Funkin': Kade Engine";
-			app.file = "Kade Engine";
 		}
 
 		app.main = "Main";
-		app.preloader = "flixel.system.FlxPreloader";
-		app.swfVersion = 11.8;
+		app.file = (platformType == PlatformType.MOBILE) ? "KadeEngine" : "Kade Engine";
+		app.swfVersion = "11.8";
 
-		defines.set("APP_ID", "0x0100f6c013bbc000");
-	}
-
-	function configureWindow():Void
-	{
 		window.width = 1280;
 		window.height = 720;
 		window.background = 0x000000;
 		window.hardware = true;
 		window.vsync = false;
+		window.fps = 0;
+		window.antialiasing = 0;
 
-		if (isWeb())
+		if (target == Platform.HTML5)
 		{
 			window.resizable = true;
 		}
-		else if (platformType == PlatformType.DESKTOP)
+
+		if (platformType == PlatformType.DESKTOP)
 		{
 			window.orientation = Orientation.LANDSCAPE;
 			window.fullscreen = false;
 			window.resizable = true;
+			window.vsync = false;
 		}
-		else if (isMobile())
+
+		if (platformType == PlatformType.MOBILE)
 		{
 			window.orientation = Orientation.LANDSCAPE;
 			window.fullscreen = true;
 			window.width = 1280;
 			window.height = 720;
 			window.resizable = false;
-		}
-		else if (isSwitch())
-		{
-			window.orientation = Orientation.LANDSCAPE;
-			window.fullscreen = true;
-			window.width = 0;
-			window.height = 0;
-			window.resizable = true;
+			defines.set("mobileC", "1");
+
+			addAssetPath("assets/shared/images/hitbox", "assets/shared/images/hitbox", "default");
 		}
 
-		if (isMobile())
-		{
-			haxedefs.set("mobileC", "1");
-		}
-	}
-
-	function configurePaths():Void
-	{
 		sources.push("source");
 
-		app.path = debug ? "export/debug" : "export/release";
-
-		if (defines.exists("32bit"))
-			app.path = "export/32bit";
-
-		if (defines.exists("32bits"))
-			app.path = "export\\32bit\\windows\\bin";
-	}
-
-	function includeSplit(path:String, rename:String):Void
-	{
-		if (isWeb())
-			includeAssets(path, rename, ["*"], ["*.ogg"]);
+		if (debug)
+		{
+			app.outputDirectory = "export/debug";
+		}
 		else
-			includeAssets(path, rename, ["*"], ["*.mp3"]);
-	}
+		{
+			app.outputDirectory = "export/release";
+			haxeflags.push("-dce full");
+			haxeflags.push("--no-traces");
+		}
 
-	function configureAssets():Void
-	{
-		includeSplit("assets/preload", "assets");
+		if (target == Platform.ANDROID)
+		{
+			if (targetFlags.exists("ONLY_ARM64"))
+			{
+				architectures = [Architecture.ARM64];
+				app.outputDirectory = debug ? "export/debug" : "export/release_arm64";
+			}
+			else if (targetFlags.exists("ONLY_ARMV7"))
+			{
+				architectures = [Architecture.ARMV7];
+				app.outputDirectory = debug ? "export/debug" : "export/release_armv7";
+			}
+			else
+			{
+				architectures = [Architecture.ARM64, Architecture.ARMV7];
+			}
 
-		haxedefs.set(isWeb() ? "NO_PRELOAD_ALL" : "PRELOAD_ALL", "1");
+			config.set("android.permission.INTERNET", "true");
+			config.set("android.permission.WRITE_EXTERNAL_STORAGE", "true");
+			config.set("android.permission.READ_EXTERNAL_STORAGE", "true");
+			config.set("android.permission.VIBRATE", "true");
+			config.set("android.minimum-sdk-version", "21");
+			config.set("android.target-sdk-version", "33");
+		}
 
-		for (library in WEEK_LIBRARIES)
-			includeSplit('assets/$library', library);
+		if (target == Platform.WINDOWS && targetFlags.exists("32bit"))
+		{
+			architectures = [Architecture.X86];
+			app.outputDirectory = "export/32bit/windows";
+		}
 
-		if (isMobile())
-			includeAssets("assets/shared/images/hitbox", "assets/shared/images/hitbox");
+		if (target == Platform.IOS)
+		{
+			config.set("ios.deployment-target", "12.0");
+			config.set("ios.device", "universal");
 
-		var readme = new Asset("art/readme.txt");
-		readme.rename = "do NOT readme.txt";
-		assets.push(readme);
+			if (targetFlags.exists("simulator"))
+			{
+				Log.info("Targeting the iOS simulator");
+			}
+		}
 
-		var license = new Asset("LICENSE");
-		license.rename = "LICENSE.txt";
-		assets.push(license);
+		var webTarget = (target == Platform.HTML5);
+		var audioExclude = webTarget ? ["*.ogg"] : ["*.mp3"];
 
-		var fontsStart = assets.length;
-		includeAssets("assets/fonts", "assets/fonts", ["*"]);
+		addAssetPath("assets/preload", "assets", "default", null, audioExclude, false);
 
-		for (i in fontsStart...assets.length)
-			assets[i].embed = true;
-	}
+		var preloadAll = !webTarget;
 
-	function configureLibraries():Void
-	{
-		var always = ["flixel", "flixel-addons", "hscript", "actuate", "extension-webm", "flixel-ui", "polymod"];
+		for (lib in ["songs", "shared", "tutorial", "week1", "week2", "week3", "week4", "week5", "week6"])
+		{
+			addAssetPath("assets/" + lib, null, lib, null, audioExclude, preloadAll);
+		}
 
-		for (lib in always)
-			haxelibs.push(new Haxelib(lib));
+		addAsset("art/readme.txt", "do NOT readme.txt", "default", false);
+		addAsset("LICENSE", "LICENSE.txt", "default", false);
+		addAssetPath("assets/fonts", "assets/fonts", "default", null, null, true);
 
-		defines.set("webgl", "1");
+		haxelibs.push(new Haxelib("flixel"));
+		haxelibs.push(new Haxelib("flixel-addons"));
+		haxelibs.push(new Haxelib("hscript"));
+		haxelibs.push(new Haxelib("actuate"));
+		haxelibs.push(new Haxelib("extension-webm"));
+		haxelibs.push(new Haxelib("flixel-ui"));
+		haxelibs.push(new Haxelib("polymod"));
 
-		if (!isMobile())
+		if (target != Platform.ANDROID && target != Platform.IOS)
+		{
 			haxelibs.push(new Haxelib("newgrounds"));
+		}
 
-		if (isSwitch())
+		if (target == Platform.LINUX_ARM)
+		{
 			haxelibs.push(new Haxelib("faxe"));
+		}
+
+		if (target == Platform.ANDROID)
+		{
+			haxelibs.push(new Haxelib("extension-androidtools"));
+		}
 
 		if (target == Platform.WINDOWS)
 		{
 			haxelibs.push(new Haxelib("discord_rpc"));
 			haxelibs.push(new Haxelib("linc_luajit"));
 		}
+
+		defines.set("FLX_NO_FOCUS_LOST_SCREEN", "1");
+		defines.set("FLX_NO_DEBUG", "1");
+		defines.set("NAPE_RELEASE_BUILD", "1");
+
+		addIcon("art/icon8.png", 8);
+		addIcon("art/icon16.png", 16);
+		addIcon("art/icon32.png", 32);
+		addIcon("art/icon64.png", 64);
+		addIcon("art/icon128.png", 128);
+		addIcon("art/icon256.png", 256);
+		addIcon("art/icon512.png", 512);
+		addIcon("art/iconOG.png");
+
+		if (target == Platform.ANDROID && !debug)
+		{
+			certificate = new Keystore("key.keystore", "alafandy", "@ellawy09", "@ellawy09");
+		}
 	}
 
-	function configureHaxedefs():Void
+	/**
+	 * Add a single asset file to the build.
+	 */
+	function addAsset(path:String, ?rename:String, ?library:String, embed:Bool = false):Void
 	{
-		haxedefs.set("FLX_NO_FOCUS_LOST_SCREEN", "1");
-		haxedefs.set("FLX_NO_DEBUG", "1");
-		haxedefs.set("NAPE_RELEASE_BUILD", "1");
-
-		if (defines.exists("newgrounds"))
-			haxedefs.set("NG_LOGIN", "1");
-
-		if (!debug)
-			haxeflags.push("-dce full");
+		var asset = new Asset(path, rename, null, embed, true);
+		asset.library = library ?? "default";
+		this.assets.push(asset);
 	}
 
-	function configureIcons():Void
+	/**
+	 * Recursively add every file in a directory to the build.
+	 */
+	function addAssetPath(path:String, ?rename:String, ?library:String, ?include:Array<String>, ?exclude:Array<String>, embed:Bool = false):Void
 	{
-		var sizes = [8, 16, 32, 64, 128, 256, 512];
+		if (path == "" || !sys.FileSystem.exists(path) || !sys.FileSystem.isDirectory(path)) return;
 
-		for (size in sizes)
-			icons.push(new Icon('art/icon$size.png', size));
+		if (include == null) include = [];
+		if (exclude == null) exclude = [];
 
-		icons.push(new Icon("art/iconOG.png"));
+		var targetPath = rename ?? path;
+		if (targetPath != "") targetPath += "/";
+
+		for (file in sys.FileSystem.readDirectory(path))
+		{
+			var fullPath = '${path}/${file}';
+
+			if (sys.FileSystem.isDirectory(fullPath))
+			{
+				if (this.filter(file, ["*"], exclude))
+				{
+					addAssetPath(fullPath, '${targetPath}${file}', library, include, exclude, embed);
+				}
+			}
+			else if (this.filter(file, include, exclude))
+			{
+				addAsset(fullPath, '${targetPath}${file}', library, embed);
+			}
+		}
 	}
 }
