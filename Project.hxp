@@ -1,0 +1,200 @@
+import hxp.*;
+import lime.tools.*;
+
+class Project extends HXProject
+{
+	static inline var PACKAGE_NAME = "me.funkin.kadeengine";
+	static inline var APP_VERSION = "0.2.7.1";
+	static inline var COMPANY = "Brenninho";
+
+	static var WEEK_LIBRARIES = ["songs", "shared", "tutorial", "week1", "week2", "week3", "week4", "week5", "week6"];
+
+	public function new()
+	{
+		super();
+
+		configureMeta();
+		configureWindow();
+		configurePaths();
+		configureAssets();
+		configureLibraries();
+		configureHaxedefs();
+		configureIcons();
+		configurePlatformExtras();
+	}
+
+	function isMobile():Bool
+	{
+		return platformType == PlatformType.MOBILE;
+	}
+
+	function isWeb():Bool
+	{
+		return platformType == PlatformType.WEB;
+	}
+
+	function isSwitch():Bool
+	{
+		return defines.exists("switch");
+	}
+
+	function configureMeta():Void
+	{
+		meta.packageName = PACKAGE_NAME;
+		meta.version = APP_VERSION;
+		meta.company = COMPANY;
+
+		if (isMobile())
+		{
+			meta.title = "FNF: Kade Engine";
+			app.file = "KadeEngine";
+		}
+		else
+		{
+			meta.title = "Friday Night Funkin': Kade Engine";
+			app.file = "Kade Engine";
+		}
+
+		app.main = "Main";
+		app.preloader = "flixel.system.FlxPreloader";
+		app.swfVersion = 11.8;
+
+		defines.set("APP_ID", "0x0100f6c013bbc000");
+	}
+
+	function configureWindow():Void
+	{
+		window.width = 1280;
+		window.height = 720;
+		window.background = 0x000000;
+		window.hardware = true;
+		window.vsync = false;
+
+		if (isWeb())
+		{
+			window.resizable = true;
+		}
+		else if (platformType == PlatformType.DESKTOP)
+		{
+			window.orientation = Orientation.LANDSCAPE;
+			window.fullscreen = false;
+			window.resizable = true;
+		}
+		else if (isMobile())
+		{
+			window.orientation = Orientation.LANDSCAPE;
+			window.fullscreen = true;
+			window.width = 1280;
+			window.height = 720;
+			window.resizable = false;
+		}
+		else if (isSwitch())
+		{
+			window.orientation = Orientation.LANDSCAPE;
+			window.fullscreen = true;
+			window.width = 0;
+			window.height = 0;
+			window.resizable = true;
+		}
+
+		if (isMobile())
+		{
+			haxedefs.set("mobileC", 1);
+
+			if (target == Platform.ANDROID)
+				platformConfig.android.installLocation = "auto";
+		}
+	}
+
+	function configurePaths():Void
+	{
+		sources.push("source");
+
+		app.path = debug ? "export/debug" : "export/release";
+
+		if (defines.exists("32bit"))
+			app.path = "export/32bit";
+
+		if (defines.exists("32bits"))
+			app.path = "export\\32bit\\windows\\bin";
+	}
+
+	function includeSplit(path:String, rename:String):Void
+	{
+		if (isWeb())
+			includeAssets(path, rename, ["*"], ["*.ogg"]);
+		else
+			includeAssets(path, rename, ["*"], ["*.mp3"]);
+	}
+
+	function configureAssets():Void
+	{
+		includeSplit("assets/preload", "assets");
+
+		haxedefs.set(isWeb() ? "NO_PRELOAD_ALL" : "PRELOAD_ALL", 1);
+
+		for (library in WEEK_LIBRARIES)
+			includeSplit('assets/$library', library);
+
+		if (isMobile())
+			includeAssets("assets/shared/images/hitbox", "assets/shared/images/hitbox");
+
+		includeAssets("art/readme.txt", "do NOT readme.txt");
+		includeAssets("LICENSE", "LICENSE.txt");
+
+		var fonts = new Asset("assets/fonts");
+		fonts.embed = true;
+		assets.push(fonts);
+	}
+
+	function configureLibraries():Void
+	{
+		var always = ["flixel", "flixel-addons", "hscript", "actuate", "extension-webm", "flixel-ui", "polymod"];
+
+		for (lib in always)
+			haxelibs.push(new Haxelib(lib));
+
+		defines.set("webgl", 1);
+
+		if (!isMobile())
+			haxelibs.push(new Haxelib("newgrounds"));
+
+		if (isSwitch())
+			haxelibs.push(new Haxelib("faxe"));
+
+		if (target == Platform.WINDOWS)
+		{
+			haxelibs.push(new Haxelib("discord_rpc"));
+			haxelibs.push(new Haxelib("linc_luajit"));
+		}
+	}
+
+	function configureHaxedefs():Void
+	{
+		haxedefs.set("FLX_NO_FOCUS_LOST_SCREEN", 1);
+		haxedefs.set("FLX_NO_DEBUG", 1);
+		haxedefs.set("NAPE_RELEASE_BUILD", 1);
+
+		if (defines.exists("newgrounds"))
+			haxedefs.set("NG_LOGIN", 1);
+
+		if (!debug)
+			haxeflags.push("-dce full");
+	}
+
+	function configureIcons():Void
+	{
+		var sizes = [8, 16, 32, 64, 128, 256, 512];
+
+		for (size in sizes)
+			icons.push(new Icon('art/icon$size.png', size));
+
+		icons.push(new Icon("art/iconOG.png"));
+	}
+
+	function configurePlatformExtras():Void
+	{
+		if (target == Platform.ANDROID && !debug)
+			certificate = new Keystore("key.keystore", "@ellawy09", "alafandy", "@ellawy09");
+	}
+}
