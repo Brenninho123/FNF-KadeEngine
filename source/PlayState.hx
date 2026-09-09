@@ -65,6 +65,7 @@ import openfl.display.StageQuality;
 import openfl.filters.ShaderFilter;
 #if mobileC
 import mobile.MobileControls;
+import mobile.PauseButton;
 #end
 #if windows
 import Discord.DiscordClient;
@@ -227,7 +228,8 @@ class PlayState extends MusicBeatState
 	public static var highestCombo:Int = 0;
 
 	#if mobileC
-	var mcontrols:MobileControls; 
+	var mcontrols:MobileControls;
+	var pauseButton:PauseButton;
 	#end
 
 	private var executeModchart = false;
@@ -1083,6 +1085,19 @@ class PlayState extends MusicBeatState
 			mcontrols.cameras = [camcontrol];
 
 			add(mcontrols);
+
+			pauseButton = new PauseButton(FlxG.width - 90, 20, () ->
+			{
+				if (startedCountdown && canPause && !paused)
+				{
+					persistentUpdate = false;
+					persistentDraw = true;
+					paused = true;
+					openSubState(new PauseSubState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+				}
+			});
+			pauseButton.cameras = [camHUD];
+			add(pauseButton);
 
 			#if android
 			addAndroidBack();
@@ -2795,6 +2810,7 @@ class PlayState extends MusicBeatState
 
 					#if mobileC
 					remove(mcontrols);
+					remove(pauseButton);
 					#end
 
 					if (FlxG.save.data.scoreScreen)
@@ -2873,6 +2889,7 @@ class PlayState extends MusicBeatState
 
 				#if mobileC
 				remove(mcontrols);
+				remove(pauseButton);
 				#end
 
 				if (FlxG.save.data.scoreScreen)
