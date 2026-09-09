@@ -2,8 +2,8 @@
 <project>
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': Kade Engine" file="Kade Engine" packageName="com.yourname.kadeengine" package="com.yourname.kadeengine" main="Main" version="0.2.7.1" company="YourName" unless="mobile"/>
-	<app title="FNF: Kade Engine" file="KadeEngine" packageName="com.yourname.kadeengine" package="com.yourname.kadeengine" main="Main" version="0.2.7.1" company="YourName" if="mobile"/>
+	<app title="Friday Night Funkin': Kade Engine" file="Kade Engine" packageName="me.funkin.kadeengine" package="me.funkin.kadeengine" main="Main" version="0.2.7.1" company="YourName" unless="mobile"/>
+	<app title="FNF: Kade Engine" file="KadeEngine" packageName="me.funkin.kadeengine" package="me.funkin.kadeengine" main="Main" version="0.2.7.1" company="YourName" if="mobile"/>
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
 
@@ -29,6 +29,11 @@
 	<!--Mobile-specific-->
 	<window if="mobile" orientation="landscape" fullscreen="true" width="1280" height="720" resizable="false"/>
 	<define name="mobileC" if="mobile" />
+
+	<!--Some mod APKs blow past the internal storage limit on lower-end devices, let the system fall back to external storage-->
+	<set name="ANDROID_INSTALL_LOCATION" value="auto" if="android" />
+
+	<!--UI touch assets (virtual pad, hitbox overlay) only need to ship on mobile builds-->
 	<assets path="assets/shared/images/hitbox" if="mobile"/>
 
 	<!--Switch-specific-->
@@ -42,6 +47,8 @@
 
 	<classpath name="source" />
 
+	<!--Everything under assets/preload (including assets/preload/images, e.g. UI sprites like pauseButton.png)
+		is packaged unconditionally and renamed to assets/ below, on every platform and regardless of PRELOAD_ALL-->
 	<assets path="assets/preload" rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/preload" rename="assets" exclude="*.mp3" unless="web"/>
 	
