@@ -82,16 +82,14 @@ jobs:
           path: .haxelib/lime/git/ndll
           key: lime-ndll-${{ inputs.os }}-${{ hashFiles('hmm.json') }}
 
-      - name: Setup and rebuild lime
+      - name: Rebuild lime native tools
         if: steps.cache-lime.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          haxelib --always run lime setup
           haxelib run lime rebuild hxcpp
           haxelib run lime rebuild cpp -64
 
-      - name: Ensure lime is set up
-        if: steps.cache-lime.outputs.cache-hit == 'true'
+      - name: Setup lime
         shell: bash
         run: haxelib --always run lime setup
 
