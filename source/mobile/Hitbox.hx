@@ -2,99 +2,99 @@
 package mobile;
 
 import flixel.graphics.FlxGraphic;
-import flixel.addons.ui.FlxButtonPlus;
 import flixel.FlxSprite;
 import flixel.FlxG;
-import flixel.graphics.frames.FlxTileFrames;
 import flixel.group.FlxSpriteGroup;
-import flixel.math.FlxPoint;
-import flixel.system.FlxAssets;
-import flixel.util.FlxDestroyUtil;
 import flixel.ui.FlxButton;
 import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxFrame;
-import flixel.ui.FlxVirtualPad;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 
-// copyed from flxvirtualpad
 class Hitbox extends FlxSpriteGroup
 {
-    public var hitbox:FlxSpriteGroup;
+	public var buttonLeft:FlxButton;
+	public var buttonDown:FlxButton;
+	public var buttonUp:FlxButton;
+	public var buttonRight:FlxButton;
 
-    var sizex:Int = 320;
+	public var hintVisible(default, set):Bool;
 
-    var screensizey:Int = 720;
+	var hitboxHint:FlxSprite;
+	var zoneWidth:Int;
+	var buttons:Array<FlxButton> = [];
+	var tweens:Map<FlxButton, FlxTween> = new Map();
 
-    public var buttonLeft:FlxButton;
-    public var buttonDown:FlxButton;
-    public var buttonUp:FlxButton;
-    public var buttonRight:FlxButton;
+	public function new(?screenWidth:Int, hintVisible:Bool = false)
+	{
+		super();
 
-    public function new(?widghtScreen:Int)
-    {
-        super();
+		zoneWidth = screenWidth != null ? Std.int(screenWidth / 4) : Std.int(FlxG.width / 4);
 
-        /*if (widghtScreen == null)
-            widghtScreen = FlxG.width;*/
+		hitboxHint = new FlxSprite(0, 0).loadGraphic('assets/shared/images/hitbox/hitbox_hint.png');
+		hitboxHint.scrollFactor.set();
+		add(hitboxHint);
 
-        sizex = widghtScreen != null ? Std.int(widghtScreen / 4) : 320;
+		buttonLeft = createZone(zoneWidth * 0, "left");
+		buttonDown = createZone(zoneWidth * 1, "down");
+		buttonUp = createZone(zoneWidth * 2, "up");
+		buttonRight = createZone(zoneWidth * 3, "right");
 
+		buttons = [buttonLeft, buttonDown, buttonUp, buttonRight];
 
-        //add graphic
-        hitbox = new FlxSpriteGroup();
-        hitbox.scrollFactor.set();
+		for (button in buttons)
+			add(button);
 
-        var hitbox_hint:FlxSprite = new FlxSprite(0, 0).loadGraphic('assets/shared/images/hitbox/hitbox_hint.png');
+		this.hintVisible = hintVisible;
+	}
 
-        hitbox_hint.alpha = 0.2;
+	function set_hintVisible(value:Bool):Bool
+	{
+		hintVisible = value;
+		if (hitboxHint != null)
+			hitboxHint.alpha = value ? 0.2 : 0;
+		return value;
+	}
 
-        add(hitbox_hint);
+	function createZone(x:Float, frameName:String):FlxButton
+	{
+		var button = new FlxButton(x, 0);
+		var frames = FlxAtlasFrames.fromSparrow('assets/shared/images/hitbox/hitbox.png', 'assets/shared/images/hitbox/hitbox.xml');
+		var graphic:FlxGraphic = FlxGraphic.fromFrame(frames.getByName(frameName));
 
+		button.loadGraphic(graphic);
+		button.alpha = 0;
+		button.scrollFactor.set();
 
-        hitbox.add(add(buttonLeft = createhitbox(0, "left")));
+		button.onDown.callback = () -> pressFeedback(button, 0.75, 0.075);
+		button.onUp.callback = () -> pressFeedback(button, 0, 0.1);
+		button.onOut.callback = () -> pressFeedback(button, 0, 0.2);
 
-        hitbox.add(add(buttonDown = createhitbox(sizex, "down")));
+		return button;
+	}
 
-        hitbox.add(add(buttonUp = createhitbox(sizex * 2, "up")));
+	function pressFeedback(button:FlxButton, target:Float, duration:Float)
+	{
+		var existing = tweens.get(button);
+		if (existing != null)
+			existing.cancel();
 
-        hitbox.add(add(buttonRight = createhitbox(sizex * 3, "right")));
-    }
+		tweens.set(button, FlxTween.num(button.alpha, target, duration, {ease: FlxEase.circInOut}, (a:Float) -> button.alpha = a));
+	}
 
-    public function createhitbox(X:Float, framestring:String) {
-        var button = new FlxButton(X, 0);
-        var frames = FlxAtlasFrames.fromSparrow('assets/shared/images/hitbox/hitbox.png', 'assets/shared/images/hitbox/hitbox.xml');
+	override public function destroy():Void
+	{
+		for (tween in tweens)
+			tween.cancel();
+		tweens.clear();
 
-        var graphic:FlxGraphic = FlxGraphic.fromFrame(frames.getByName(framestring));
+		super.destroy();
 
-        button.loadGraphic(graphic);
-
-        button.alpha = 0;
-
-
-        button.onDown.callback = function (){
-            FlxTween.num(0, 0.75, .075, {ease: FlxEase.circInOut}, function (a:Float) { button.alpha = a; });
-        };
-
-        button.onUp.callback = function (){
-            FlxTween.num(0.75, 0, .1, {ease: FlxEase.circInOut}, function (a:Float) { button.alpha = a; });
-        }
-
-        button.onOut.callback = function (){
-            FlxTween.num(button.alpha, 0, .2, {ease: FlxEase.circInOut}, function (a:Float) { button.alpha = a; });
-        }
-
-        return button;
-    }
-
-    override public function destroy():Void
-        {
-            super.destroy();
-
-            buttonLeft = null;
-            buttonDown = null;
-            buttonUp = null;
-            buttonRight = null;
-        }
-} 
+		buttonLeft = null;
+		buttonDown = null;
+		buttonUp = null;
+		buttonRight = null;
+		hitboxHint = null;
+		buttons = null;
+	}
+}
 #end
