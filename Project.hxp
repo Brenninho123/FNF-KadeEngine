@@ -20,7 +20,6 @@ class Project extends HXProject
 		configureLibraries();
 		configureHaxedefs();
 		configureIcons();
-		configurePlatformExtras();
 	}
 
 	function isMobile():Bool
@@ -99,10 +98,7 @@ class Project extends HXProject
 
 		if (isMobile())
 		{
-			haxedefs.set("mobileC", 1);
-
-			if (target == Platform.ANDROID)
-				platformConfig.android.installLocation = "auto";
+			haxedefs.set("mobileC", "1");
 		}
 	}
 
@@ -131,7 +127,7 @@ class Project extends HXProject
 	{
 		includeSplit("assets/preload", "assets");
 
-		haxedefs.set(isWeb() ? "NO_PRELOAD_ALL" : "PRELOAD_ALL", 1);
+		haxedefs.set(isWeb() ? "NO_PRELOAD_ALL" : "PRELOAD_ALL", "1");
 
 		for (library in WEEK_LIBRARIES)
 			includeSplit('assets/$library', library);
@@ -154,7 +150,7 @@ class Project extends HXProject
 		for (lib in always)
 			haxelibs.push(new Haxelib(lib));
 
-		defines.set("webgl", 1);
+		defines.set("webgl", "1");
 
 		if (!isMobile())
 			haxelibs.push(new Haxelib("newgrounds"));
@@ -171,12 +167,12 @@ class Project extends HXProject
 
 	function configureHaxedefs():Void
 	{
-		haxedefs.set("FLX_NO_FOCUS_LOST_SCREEN", 1);
-		haxedefs.set("FLX_NO_DEBUG", 1);
-		haxedefs.set("NAPE_RELEASE_BUILD", 1);
+		haxedefs.set("FLX_NO_FOCUS_LOST_SCREEN", "1");
+		haxedefs.set("FLX_NO_DEBUG", "1");
+		haxedefs.set("NAPE_RELEASE_BUILD", "1");
 
 		if (defines.exists("newgrounds"))
-			haxedefs.set("NG_LOGIN", 1);
+			haxedefs.set("NG_LOGIN", "1");
 
 		if (!debug)
 			haxeflags.push("-dce full");
@@ -190,11 +186,5 @@ class Project extends HXProject
 			icons.push(new Icon('art/icon$size.png', size));
 
 		icons.push(new Icon("art/iconOG.png"));
-	}
-
-	function configurePlatformExtras():Void
-	{
-		if (target == Platform.ANDROID && !debug)
-			certificate = new Keystore("key.keystore", "@ellawy09", "alafandy", "@ellawy09");
 	}
 }
