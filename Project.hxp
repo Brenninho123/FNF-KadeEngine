@@ -10,16 +10,16 @@ class Project extends HXProject
 		meta.title = "Friday Night Funkin': Kade Engine";
 		meta.packageName = "com.funkin.kade";
 		meta.company = "The Kade Crew";
-		meta.version = "0.2.7.1";
-		meta.buildNumber = "1";
+		meta.version = "0.0.1";
+		meta.buildNumber = getBuildNumber();
 
-		if (platformType == PlatformType.MOBILE)
+		if (isMobile())
 		{
 			meta.title = "FNF: Kade Engine";
 		}
 
 		app.main = "Main";
-		app.file = (platformType == PlatformType.MOBILE) ? "KadeEngine" : "Kade Engine";
+		app.file = isMobile() ? "KadeEngine" : "Kade Engine";
 
 		window.width = 1280;
 		window.height = 720;
@@ -42,7 +42,7 @@ class Project extends HXProject
 			window.vsync = false;
 		}
 
-		if (platformType == PlatformType.MOBILE)
+		if (isMobile())
 		{
 			window.orientation = Orientation.LANDSCAPE;
 			window.fullscreen = true;
@@ -67,7 +67,7 @@ class Project extends HXProject
 			haxeflags.push("--no-traces");
 		}
 
-		if (target == Platform.ANDROID)
+		if (isAndroid())
 		{
 			if (targetFlags.exists("ONLY_ARM64"))
 			{
@@ -90,15 +90,33 @@ class Project extends HXProject
 			config.set("android.permission.VIBRATE", "true");
 			config.set("android.minimum-sdk-version", "21");
 			config.set("android.target-sdk-version", "33");
+
+			if (isRelease())
+			{
+				var envPath = Sys.getEnv("KEYSTORE_PATH");
+				var envPassword = Sys.getEnv("KEYSTORE_PASSWORD");
+				var envAlias = Sys.getEnv("KEYSTORE_ALIAS");
+				var envAliasPassword = Sys.getEnv("KEYSTORE_ALIAS_PASSWORD");
+
+				if (envPath != null && envPassword != null && envAlias != null)
+				{
+					keystore = new Keystore(envPath, envPassword, envAlias, envAliasPassword ?? envPassword);
+				}
+				else
+				{
+					Log.info("", "- Using local fallback keystore (key.keystore). Set KEYSTORE_PATH/KEYSTORE_PASSWORD/KEYSTORE_ALIAS env vars for CI/release signing.");
+					keystore = new Keystore("key.keystore", "@ellawy09", "alafandy", "@ellawy09");
+				}
+			}
 		}
 
-		if (target == Platform.WINDOWS && targetFlags.exists("32bit"))
+		if (isWindows() && targetFlags.exists("32bit"))
 		{
 			architectures = [Architecture.X86];
 			app.path = "export/32bit/windows";
 		}
 
-		if (target == Platform.IOS)
+		if (isIOS())
 		{
 			config.set("ios.deployment-target", "12.0");
 			config.set("ios.device", "universal");
@@ -128,20 +146,24 @@ class Project extends HXProject
 		haxelibs.push(new Haxelib("flixel-ui"));
 		haxelibs.push(new Haxelib("polymod"));
 
-		if (target != Platform.ANDROID && target != Platform.IOS)
+		if (target != Platform.HTML5)
+		{
+			haxelibs.push(new Haxelib("hxlua"));
+		}
+
+		if (!isAndroid() && !isIOS())
 		{
 			haxelibs.push(new Haxelib("newgrounds"));
 		}
 
-		if (target == Platform.ANDROID)
+		if (isAndroid())
 		{
 			haxelibs.push(new Haxelib("extension-androidtools"));
 		}
 
-		if (target == Platform.WINDOWS)
+		if (isWindows())
 		{
 			haxelibs.push(new Haxelib("discord_rpc"));
-			haxelibs.push(new Haxelib("linc_luajit"));
 		}
 
 		haxedefs.set("FLX_NO_FOCUS_LOST_SCREEN", "1");
@@ -156,11 +178,27 @@ class Project extends HXProject
 		icons.push(new Icon("art/icon256.png", 256));
 		icons.push(new Icon("art/icon512.png", 512));
 		icons.push(new Icon("art/iconOG.png"));
+	}
 
-		if (target == Platform.ANDROID && !debug)
-		{
-			keystore = new Keystore("key.keystore", "@ellawy09", "alafandy", "@ellawy09");
-		}
+	function isAndroid():Bool
+		return target == Platform.ANDROID;
+
+	function isIOS():Bool
+		return target == Platform.IOS;
+
+	function isWindows():Bool
+		return target == Platform.WINDOWS;
+
+	function isMobile():Bool
+		return platformType == PlatformType.MOBILE;
+
+	function isRelease():Bool
+		return !debug;
+
+	function getBuildNumber():String
+	{
+		var envBuild = Sys.getEnv("GITHUB_RUN_NUMBER");
+		return envBuild != null ? envBuild : "1";
 	}
 
 	function addAsset(path:String, ?rename:String, ?library:String, embed:Bool = false):Void
