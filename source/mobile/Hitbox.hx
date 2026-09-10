@@ -1,4 +1,4 @@
-#if mobileC
+#if mobile
 package mobile;
 
 import flixel.FlxG;
@@ -10,7 +10,6 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import openfl.display.Shape;
 import openfl.display.BitmapData;
-import openfl.geom.Matrix;
 
 class Hitbox extends FlxSpriteGroup
 {
@@ -34,52 +33,41 @@ class Hitbox extends FlxSpriteGroup
         hitbox = new FlxSpriteGroup();
         hitbox.scrollFactor.set();
 
-        hitbox.add(add(buttonLeft = createHitbox(0, 180)));
-        hitbox.add(add(buttonDown = createHitbox(sizex, 270)));
-        hitbox.add(add(buttonUp = createHitbox(sizex * 2, 90)));
-        hitbox.add(add(buttonRight = createHitbox(sizex * 3, 0)));
+        var graphic = buildGraphic();
+
+        hitbox.add(add(buttonLeft = createHitbox(0, graphic)));
+        hitbox.add(add(buttonDown = createHitbox(sizex, graphic)));
+        hitbox.add(add(buttonUp = createHitbox(sizex * 2, graphic)));
+        hitbox.add(add(buttonRight = createHitbox(sizex * 3, graphic)));
     }
 
-    function buildGraphic(angle:Float):FlxGraphic
+    function buildGraphic():FlxGraphic
     {
         var bmp = new BitmapData(sizex, screensizey, true, 0x00000000);
 
-        var bg = new Shape();
-        bg.graphics.beginFill(0xffffff, 0.08);
-        bg.graphics.drawRect(0, 0, sizex, screensizey);
-        bg.graphics.endFill();
-        bmp.draw(bg);
-
-        var arrow = new Shape();
-        arrow.graphics.beginFill(0xffffff, 0.6);
-        arrow.graphics.moveTo(-30, 25);
-        arrow.graphics.lineTo(30, 25);
-        arrow.graphics.lineTo(0, -25);
-        arrow.graphics.lineTo(-30, 25);
-        arrow.graphics.endFill();
-
-        var matrix = new Matrix();
-        matrix.rotate(angle * Math.PI / 180);
-        matrix.translate(sizex / 2, screensizey / 2);
-        bmp.draw(arrow, matrix);
+        var shape = new Shape();
+        shape.graphics.beginFill(0xffffff, 1);
+        shape.graphics.drawRect(0, 0, sizex, screensizey);
+        shape.graphics.endFill();
+        bmp.draw(shape);
 
         return FlxGraphic.fromBitmapData(bmp);
     }
 
-    function createHitbox(x:Float, angle:Float):FlxButton
+    function createHitbox(x:Float, graphic:FlxGraphic):FlxButton
     {
         var button = new FlxButton(x, 0);
-        button.loadGraphic(buildGraphic(angle));
+        button.loadGraphic(graphic);
         button.alpha = 0;
 
         button.onDown.callback = function()
         {
-            FlxTween.num(0, 0.75, 0.075, {ease: FlxEase.circInOut}, function(a:Float) { button.alpha = a; });
+            FlxTween.num(0, 0.35, 0.075, {ease: FlxEase.circInOut}, function(a:Float) { button.alpha = a; });
         };
 
         button.onUp.callback = function()
         {
-            FlxTween.num(0.75, 0, 0.1, {ease: FlxEase.circInOut}, function(a:Float) { button.alpha = a; });
+            FlxTween.num(0.35, 0, 0.1, {ease: FlxEase.circInOut}, function(a:Float) { button.alpha = a; });
         };
 
         button.onOut.callback = function()
