@@ -9,35 +9,29 @@ import flixel.FlxGame;
 import flixel.FlxState;
 import openfl.Assets;
 import openfl.Lib;
-import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.events.Event;
 
 class Main extends Sprite
 {
-	var gameWidth:Int = 1280; // Width of the game in pixels (might be less / more in actual pixels depending on your zoom).
-	var gameHeight:Int = 720; // Height of the game in pixels (might be less / more in actual pixels depending on your zoom).
-	var initialState:Class<FlxState> = TitleState; // The FlxState the game starts with.
-	var zoom:Float = -1; // If -1, zoom is automatically calculated to fit the window dimensions.
+	var gameWidth:Int = 1280;
+	var gameHeight:Int = 720;
+	var initialState:Class<FlxState> = TitleState;
+	var zoom:Float = -1;
 
 	#if mobileC
-	var framerate:Int = 60; // How many frames per second the game should run at.
+	var framerate:Int = 60;
 	#else
 	var framerate:Int = 120;
 	#end
 
-	var skipSplash:Bool = true; // Whether to skip the flixel splash screen that appears in release mode.
-	var startFullscreen:Bool = false; // Whether to start the game in fullscreen on desktop targets
+	var skipSplash:Bool = true;
+	var startFullscreen:Bool = false;
 
-	public static var watermarks = true; // Whether to put Kade Engine liteartly anywhere
-
-	// You can pretty much ignore everything from here on - your code should go in your states.
+	public static var watermarks = true;
 
 	public static function main():Void
 	{
-
-		// quick checks 
-
 		Lib.current.addChild(new Main());
 	}
 
@@ -54,8 +48,6 @@ class Main extends Sprite
 			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
 	}
-
-	// public static var webmHandler:WebmHandler;
 
 	private function init(?E:Event):Void
 	{
@@ -93,7 +85,7 @@ class Main extends Sprite
 		#if android
 		FlxG.android.preventDefaultKeys = [BACK];
 		#end
-		
+
 		fpsCounter = new FPS(10, 3, 0xFFFFFF);
 		addChild(fpsCounter);
 		toggleFPS(FlxG.save.data.fps);
