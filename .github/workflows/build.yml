@@ -75,7 +75,7 @@ jobs:
           haxe compile.hxml
           cd -
 
-      - name: Rebuild lime native tools
+      - name: Rebuild lime native tools (host)
         shell: bash
         run: |
           haxelib run lime rebuild hxcpp
@@ -102,6 +102,22 @@ jobs:
           haxelib run lime config ANDROID_NDK_ROOT $ANDROID_NDK_LATEST_HOME
           haxelib run lime config JAVA_HOME $JAVA_HOME_17_arm64
           haxelib run lime config ANDROID_SETUP true
+
+      - name: Rebuild lime native tools (Android)
+        if: inputs.name == 'Android x64' || inputs.name == 'Android x32'
+        shell: bash
+        run: haxelib run lime rebuild ${{ inputs.buildArgs }}
+
+      - name: Verify Android liblime was built
+        if: inputs.name == 'Android x64' || inputs.name == 'Android x32'
+        shell: bash
+        run: |
+          echo "Searching for Android liblime..."
+          find .haxelib/lime/git/ndll/Android -name "*.so" || true
+          if ! find .haxelib/lime/git/ndll/Android -name "*.so" | grep -q .; then
+            echo "::error::liblime .so was not produced by 'lime rebuild android'. Check the previous step's output for NDK/compile errors."
+            exit 1
+          fi
 
       - name: Compile
         run: haxelib run lime build ${{ inputs.buildArgs }}
