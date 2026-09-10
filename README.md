@@ -5,7 +5,7 @@
 
 ![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/AliAlafandy/FNF-KadeEngine-1.5.4-Template/latest) ![GitHub repo size](https://img.shields.io/github/repo-size/AliAlafandy/FNF-KadeEngine-1.5.4-Template) ![Lines of code](https://img.shields.io/tokei/lines/github/AliAlafandy/FNF-KadeEngine-1.5.4-Template) ![Supported platforms](https://img.shields.io/badge/supported%20platforms-windows%2C%20linux%2C%20macOS%2C%20html5%2C%20android%2C%20ios-blue) ![GitHub all releases](https://img.shields.io/github/downloads/AliAlafandy/FNF-KadeEngine-1.5.4-Template/total) ![GitHub](https://img.shields.io/github/license/AliAlafandy/FNF-KadeEngine-1.5.4-Template) ![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/AliAlafandy/FNF-KadeEngine-1.5.4-Template?include_prereleases&label=latest%20version) 
 
-# Friday Night Funkin': Kade Engine v1.5.4 Template
+# Friday Night Funkin': Kade Engine
 
 This Template for Making any Mods you want, with Mobile Support.
 
