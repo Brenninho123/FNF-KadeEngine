@@ -1066,14 +1066,8 @@ class PlayState extends MusicBeatState
 
 		#if mobileC
 			mcontrols = new MobileControls();
-			switch (mcontrols.mode)
-			{
-				case VIRTUALPAD_RIGHT | VIRTUALPAD_LEFT | VIRTUALPAD_CUSTOM:
-					controls.setVirtualPad(mcontrols._virtualPad, FULL, NONE);
-				case HITBOX:
-					controls.setHitBox(mcontrols._hitbox);
-				default:
-			}
+			controls.setHitBox(mcontrols._hitbox);
+
 			trackedinputs = controls.trackedinputs;
 			controls.trackedinputs = [];
 
@@ -1083,13 +1077,6 @@ class PlayState extends MusicBeatState
 			mcontrols.cameras = [camcontrol];
 
 			add(mcontrols);
-
-			/*#if android
-			addAndroidBack();
-			addVirtualPad(NONE, STOP);
-			#else
-			addVirtualPad(NONE, STOP);
-			#end*/
 		#end
 
 		// if (SONG.song == 'South')
