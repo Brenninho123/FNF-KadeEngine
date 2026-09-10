@@ -75,19 +75,21 @@ jobs:
           haxe compile.hxml
           cd -
 
-      - name: Restore lime native rebuild cache
-        id: cache-lime
-        uses: actions/cache@v4
-        with:
-          path: .haxelib/lime/git/ndll
-          key: lime-ndll-${{ inputs.os }}-${{ hashFiles('hmm.json') }}
-
       - name: Rebuild lime native tools
-        if: steps.cache-lime.outputs.cache-hit != 'true'
         shell: bash
         run: |
           haxelib run lime rebuild hxcpp
-          haxelib run lime rebuild cpp -64
+          haxelib run lime rebuild cpp
+
+      - name: Verify lime.ndll was built
+        shell: bash
+        run: |
+          echo "Searching for lime.ndll..."
+          find .haxelib/lime/git/ndll -name "*.ndll" || true
+          if ! find .haxelib/lime/git/ndll -name "*.ndll" | grep -q .; then
+            echo "::error::lime.ndll was not produced by 'lime rebuild cpp'. Check the previous step's output for compile errors."
+            exit 1
+          fi
 
       - name: Setup lime
         shell: bash
