@@ -56,13 +56,6 @@
       "url": "https://github.com/FunkinCrew/flixel-addons"
     },
     {
-      "name": "faxe",
-      "type": "git",
-      "dir": null,
-      "ref": "master",
-      "url": "https://github.com/uhrobots/faxe"
-    },
-    {
       "name": "polymod",
       "type": "git",
       "dir": null,
@@ -89,9 +82,11 @@
       "version": "2.2.2"
     },
     {
-      "name": "linc_luajit",
-      "type": "haxelib",
-      "version": null
+      "name": "hxlua",
+      "type": "git",
+      "dir": null,
+      "ref": "dab084bf87e6200c504125e5f780e71ffe95d50b",
+      "url": "https://github.com/MAJigsaw77/hxlua"
     },
     {
       "name": "actuate",
