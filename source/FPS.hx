@@ -3,10 +3,7 @@ package;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.events.Event;
-
-#if android
-import extension.androidtools.device.Device;
-#end
+import openfl.system.Capabilities;
 
 class FPS extends TextField
 {
@@ -24,7 +21,7 @@ class FPS extends TextField
 
 		currentFPS = 0;
 		times = [];
-		system = detectSystem();
+		system = Capabilities.os;
 
 		selectable = false;
 		mouseEnabled = false;
@@ -34,21 +31,6 @@ class FPS extends TextField
 		text = "FPS: 0\nSystem: " + system;
 
 		addEventListener(Event.ENTER_FRAME, update);
-	}
-
-	function detectSystem():String
-	{
-		#if android
-		return "Android " + Device.getVersionRelease();
-		#elseif ios
-		return "iOS";
-		#elseif html5
-		return "HTML5";
-		#elseif sys
-		return Sys.systemName();
-		#else
-		return "Unknown";
-		#end
 	}
 
 	function update(_:Event):Void
