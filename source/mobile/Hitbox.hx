@@ -1,100 +1,131 @@
 #if mobileC
 package mobile;
 
-import flixel.graphics.FlxGraphic;
 import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.group.FlxSpriteGroup;
+import flixel.math.FlxPoint;
 import flixel.ui.FlxButton;
-import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import flixel.util.FlxColor;
+import flixel.util.FlxSpriteUtil;
 
 class Hitbox extends FlxSpriteGroup
 {
+	public var hitbox:FlxSpriteGroup;
+
+	var sizex:Int = 320;
+	var screensizey:Int = 720;
+
 	public var buttonLeft:FlxButton;
 	public var buttonDown:FlxButton;
 	public var buttonUp:FlxButton;
 	public var buttonRight:FlxButton;
 
-	public var hintVisible(default, set):Bool;
+	static inline var ACCENT_HEIGHT:Float = 64;
+	static inline var BASE_ALPHA:Float = 0.18;
+	static inline var PRESS_ALPHA:Float = 0.6;
 
-	var hitboxHint:FlxSprite;
-	var zoneWidth:Int;
-	var buttons:Array<FlxButton> = [];
-	var tweens:Map<FlxButton, FlxTween> = new Map();
-
-	public function new(?screenWidth:Int, hintVisible:Bool = false)
+	public function new(?widghtScreen:Int)
 	{
 		super();
 
-		zoneWidth = screenWidth != null ? Std.int(screenWidth / 4) : Std.int(FlxG.width / 4);
+		sizex = widghtScreen != null ? Std.int(widghtScreen / 4) : 320;
+		screensizey = Std.int(FlxG.height);
 
-		hitboxHint = new FlxSprite(0, 0).loadGraphic('assets/shared/images/hitbox/hitbox_hint.png');
-		hitboxHint.scrollFactor.set();
-		add(hitboxHint);
+		hitbox = new FlxSpriteGroup();
+		hitbox.scrollFactor.set();
 
-		buttonLeft = createZone(zoneWidth * 0, "left");
-		buttonDown = createZone(zoneWidth * 1, "down");
-		buttonUp = createZone(zoneWidth * 2, "up");
-		buttonRight = createZone(zoneWidth * 3, "right");
+		hitbox.add(add(buttonLeft = createhitbox(0, "left", 0xFFC24B99)));
+		hitbox.add(add(buttonDown = createhitbox(sizex, "down", 0xFF00FFFF)));
+		hitbox.add(add(buttonUp = createhitbox(sizex * 2, "up", 0xFF12FA05)));
+		hitbox.add(add(buttonRight = createhitbox(sizex * 3, "right", 0xFFF9393F)));
 
-		buttons = [buttonLeft, buttonDown, buttonUp, buttonRight];
-
-		for (button in buttons)
-			add(button);
-
-		this.hintVisible = hintVisible;
+		add(buildDividers());
 	}
 
-	function set_hintVisible(value:Bool):Bool
+	function buildDividers():FlxSprite
 	{
-		hintVisible = value;
-		if (hitboxHint != null)
-			hitboxHint.alpha = value ? 0.2 : 0;
-		return value;
+		var lines:FlxSprite = new FlxSprite(0, 0).makeGraphic(sizex * 4, screensizey, FlxColor.TRANSPARENT, true);
+		lines.scrollFactor.set();
+		lines.alpha = 0.25;
+
+		var lineStyle = {thickness: 2.0, color: FlxColor.WHITE};
+
+		for (i in 1...4)
+		{
+			FlxSpriteUtil.drawLine(lines, sizex * i, screensizey - ACCENT_HEIGHT - 6, sizex * i, screensizey, lineStyle);
+		}
+
+		return lines;
 	}
 
-	function createZone(x:Float, frameName:String):FlxButton
+	public function createhitbox(X:Float, direction:String, color:FlxColor):FlxButton
 	{
-		var button = new FlxButton(x, 0);
-		var frames = FlxAtlasFrames.fromSparrow('assets/shared/images/hitbox/hitbox.png', 'assets/shared/images/hitbox/hitbox.xml');
-		var graphic:FlxGraphic = FlxGraphic.fromFrame(frames.getByName(frameName));
+		var button = new FlxButton(X, 0);
 
-		button.loadGraphic(graphic);
-		button.alpha = 0;
-		button.scrollFactor.set();
+		var graphic:FlxSprite = new FlxSprite().makeGraphic(sizex, screensizey, FlxColor.TRANSPARENT, true);
 
-		button.onDown.callback = () -> pressFeedback(button, 0.75, 0.075);
-		button.onUp.callback = () -> pressFeedback(button, 0, 0.1);
-		button.onOut.callback = () -> pressFeedback(button, 0, 0.2);
+		FlxSpriteUtil.drawRoundRect(graphic, 4, screensizey - ACCENT_HEIGHT, sizex - 8, ACCENT_HEIGHT - 8, 18, 18, color);
+
+		drawDirectionGlyph(graphic, direction, color);
+
+		button.loadGraphic(graphic.pixels);
+		button.alpha = BASE_ALPHA;
+
+		button.onDown.callback = function()
+		{
+			FlxTween.num(BASE_ALPHA, PRESS_ALPHA, 0.075, {ease: FlxEase.circInOut}, function(a:Float) button.alpha = a);
+		};
+
+		button.onUp.callback = function()
+		{
+			FlxTween.num(button.alpha, BASE_ALPHA, 0.1, {ease: FlxEase.circInOut}, function(a:Float) button.alpha = a);
+		}
+
+		button.onOut.callback = function()
+		{
+			FlxTween.num(button.alpha, BASE_ALPHA, 0.2, {ease: FlxEase.circInOut}, function(a:Float) button.alpha = a);
+		}
 
 		return button;
 	}
 
-	function pressFeedback(button:FlxButton, target:Float, duration:Float)
+	function drawDirectionGlyph(sprite:FlxSprite, direction:String, color:FlxColor):Void
 	{
-		var existing = tweens.get(button);
-		if (existing != null)
-			existing.cancel();
+		var cx:Float = sizex / 2;
+		var cy:Float = screensizey - (ACCENT_HEIGHT / 2);
+		var size:Float = 16;
 
-		tweens.set(button, FlxTween.num(button.alpha, target, duration, {ease: FlxEase.circInOut}, (a:Float) -> button.alpha = a));
+		var points:Array<FlxPoint> = switch (direction)
+		{
+			case "left":
+				[FlxPoint.get(cx - size, cy), FlxPoint.get(cx + size, cy - size), FlxPoint.get(cx + size, cy + size)];
+			case "right":
+				[FlxPoint.get(cx + size, cy), FlxPoint.get(cx - size, cy - size), FlxPoint.get(cx - size, cy + size)];
+			case "up":
+				[FlxPoint.get(cx, cy - size), FlxPoint.get(cx - size, cy + size), FlxPoint.get(cx + size, cy + size)];
+			case "down":
+				[FlxPoint.get(cx, cy + size), FlxPoint.get(cx - size, cy - size), FlxPoint.get(cx + size, cy - size)];
+			default:
+				[];
+		}
+
+		if (points.length == 0)
+			return;
+
+		FlxSpriteUtil.drawPolygon(sprite, points, FlxColor.WHITE);
 	}
 
 	override public function destroy():Void
 	{
-		for (tween in tweens)
-			tween.cancel();
-		tweens.clear();
-
 		super.destroy();
 
 		buttonLeft = null;
 		buttonDown = null;
 		buttonUp = null;
 		buttonRight = null;
-		hitboxHint = null;
-		buttons = null;
 	}
 }
 #end
