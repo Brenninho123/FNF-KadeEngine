@@ -16,6 +16,12 @@ jobs:
             artifactName: Kade Engine (Android)
             artifactPath: export/release/android/bin/app/build/outputs/apk/release/*.apk
 
+          - name: Kade Engine (iOS)
+            os: macos-15
+            buildArgs: "ios -nosign"
+            artifactName: Kade Engine (iOS)
+            artifactPath: export/release/ios/build/Release-iphoneos/*.ipa
+
     uses: ./.github/workflows/build.yml
     with:
       name: ${{ matrix.name }}
